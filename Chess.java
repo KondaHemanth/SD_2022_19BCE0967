@@ -147,15 +147,31 @@ class Chess {
                 return;
             }
 
-            board[pos/5][pos%5] = "-";
+            String currChar = board[pos/5][pos%5];
+            String finChar = board[finPos/5][finPos%5];
             
-            A.put(character, finPos);
-            board[finPos/5][finPos%5] = "A-" + character ;
+
+            if(Character.compare(currChar.charAt(0), finChar.charAt(0)) != 0){
+                if(finChar.charAt(0) == 'B'){
+                    B.remove(finChar.substring(finChar.indexOf("-")+1, finChar.indexOf(":")));
+                }
+                
+                board[pos/5][pos%5] = "-";
+
+                A.put(character, finPos);
+                board[finPos/5][finPos%5] = "A-" + character ;
+            }
+            else {
+                System.out.println("Incorrect move: Position occupied");
+                return;
+            }
+            
             
         }
         else {
             pos = B.get(character);
 
+            board[finPos/5][finPos%5] = "B-" + character ;
             if(code == 1 || code == -1){
                 if(code == 1){
                     finPos = pos + 5;
@@ -181,10 +197,27 @@ class Chess {
                 return;
             }
 
-            board[pos/5][pos%5] = "-";
+
+            String currChar = board[pos/5][pos%5];
+            String finChar = board[finPos/5][finPos%5];
             
-            B.put(character, finPos);
-            board[finPos/5][finPos%5] = "B-" + character ;
+
+            if(Character.compare(currChar.charAt(0), finChar.charAt(0)) != 0){
+
+                if(finChar.charAt(0) == 'A'){
+                    B.remove(finChar.substring(finChar.indexOf("-")+1, finChar.indexOf(":")));
+                }
+
+                board[pos/5][pos%5] = "-";
+                
+                B.put(character, finPos);
+                board[finPos/5][finPos%5] = "B-" + character ;
+            }
+            else {
+                System.out.println("Incorrect move: Position occupied");
+                return;
+            }
+            
         }
     }
     
