@@ -1,6 +1,7 @@
 import java.util.*;
 
 // TODO: Checking characters/pawns
+// TODO: Killings
 
 class Chess {
 
@@ -11,8 +12,6 @@ class Chess {
 
     public static void main(String [] args){
         board = new String[5][5];
-
-        
         
         boolean over = false;
         char winner = ' ';
@@ -64,24 +63,55 @@ class Chess {
         System.out.print("Player "+(player-'A'+1)+"'s Move: ");
         inp = scn.nextLine();
 
+        //Move Sets
+
+        String[] moveP = new String[]{"F", "B", "L", "R"};
+        String[] moveH2 = new String[]{"FL", "FR", "BL", "BR"};
+
+        HashSet<String> P = new HashSet<>(Arrays.asList(moveP));
+        HashSet<String> H2 = new HashSet<>(Arrays.asList(moveH2));
+
+
         String character = inp.substring(0, inp.indexOf(':')).trim();
 
-        char move = inp.charAt(inp.indexOf(':')+1);
-        int movCode;
+        String move = inp.substring(inp.indexOf(':')+1);
+        int movCode = 0;
+
+        if((character.charAt(0) == 'P' || character.compareTo("H1") == 0) && H2.contains(move)){
+            System.out.println("Invalid Move Set");
+            return;
+        }
 
         switch(move){
-            case 'F':
-                movCode = 1;
-                break;
-            case 'B':
-                movCode = -1;
-                break;
-            case 'R':
+            case "F":
                 movCode = 2;
                 break;
+            case "B":
+                movCode = 6;
+                break;
+            case "R":
+                movCode = 4;
+                break;
+            case "L":
+                movCode = 8;
+                break;
+            case "FL":
+                movCode = 1;
+                break;
+            case "FR":
+                movCode = 3;
+                break;
+            case "BR":
+                movCode = 5;
+                break;
+            case "BL":
+                movCode = 7;
+                break;
             default:
-                movCode = -2;
+                movCode = -1;
         }
+
+
 
         //int finPos = Integer.valueOf(inp.substring(inp.indexOf(':')+1).trim());
         int pos;
@@ -97,7 +127,6 @@ class Chess {
         }
     }
     
-
     
     public static void updateBoard() {
         int pos;
@@ -117,30 +146,67 @@ class Chess {
     
     public static void updateBoard(char player, String character, int code) {
         int pos, finPos=0;
+
+        int finRow=0, finCol = 0;
+
+        int movDist = 0;
+
+        if(character.compareTo("H1") == 0 || character.compareTo("H2") == 0){
+            movDist = 2;
+        }
+        if(character.charAt(0) == 'P'){
+            movDist = 1;
+        }
         
         if(player == 'A'){
 
             pos = A.get(character);
 
-            if(code == 1 || code == -1){
-                if(code == 1){
-                    finPos = pos - 5;
-                }
-                else {
-                    finPos = pos + 5;
-                }
+            switch(code){
+                case 1:
+                    finRow = ((pos/5)-movDist);
+                    finCol = ((pos%5)-movDist);
+                    break;
+
+                case 2:
+                    finRow = (pos/5)-movDist;
+                    finCol = pos%5;
+                    break;
+
+                case 3 :
+                    finRow = ((pos/5)-2);
+                    finCol = ((pos%5)+2);
+                    break;
+
+                case 4:
+                    finRow = (pos/5);
+                    finCol = (pos%5) + movDist;
+                    break;
+
                 
-            }
-            else {
-                if(code == -2){
-                    finPos = pos - 1;
-                }
-                else {
-                    finPos = pos + 1;
-                }
+                case 5:
+                    finRow = ((pos/5)+2);
+                    finCol = ((pos%5)+2);
+                    break;
+                    
+                case 6:
+                    finRow = (pos/5)+movDist;
+                    finCol = pos%5;
+                break;
+                
+                case 7:
+                finRow = ((pos/5)+2);
+                finCol = ((pos%5)-2);
+                break;
+
+                case 8:
+                    finRow = (pos/5);
+                    finCol = (pos%5)-movDist;
+                    break;
+
             }
 
-            if(finPos/5 > 4 || finPos/5 < 0 || finPos%5 > 4 || finPos % 5 < 0){
+            if(finRow > 4 || finRow < 0 || finCol > 4 || finCol < 0){
 
                 System.out.println("Move out of bounds");
 
@@ -148,18 +214,18 @@ class Chess {
             }
 
             String currChar = board[pos/5][pos%5];
-            String finChar = board[finPos/5][finPos%5];
+            String finChar = board[finRow][finCol];
             
 
-            if(Character.compare(currChar.charAt(0), finChar.charAt(0)) != 0){
+            if(currChar.charAt(0) != finChar.charAt(0)){
                 if(finChar.charAt(0) == 'B'){
                     B.remove(finChar.substring(finChar.indexOf("-")+1, finChar.indexOf(":")));
                 }
                 
                 board[pos/5][pos%5] = "-";
 
-                A.put(character, finPos);
-                board[finPos/5][finPos%5] = "A-" + character ;
+                A.put(character, finRow*5 + finCol);
+                board[finRow][finCol] = "A-" + character ;
             }
             else {
                 System.out.println("Incorrect move: Position occupied");
@@ -169,28 +235,67 @@ class Chess {
             
         }
         else {
+            finRow=0;
+            finCol = 0;
+
+        movDist = 0;
+
+        if(character.compareTo("H1") == 0 || character.compareTo("H2") == 0){
+            movDist = 2;
+        }
+        if(character.charAt(0) == 'P'){
+            movDist = 1;
+        }
+        
+        if(player == 'B'){
+
             pos = B.get(character);
 
-            board[finPos/5][finPos%5] = "B-" + character ;
-            if(code == 1 || code == -1){
-                if(code == 1){
-                    finPos = pos + 5;
-                }
-                else {
-                    finPos = pos - 5;
-                }
+            switch(code){
+                case 1:
+                    finRow = ((pos/5)+movDist);
+                    finCol = ((pos%5)+movDist);
+                    break;
+
+                case 2:
+                    finRow = (pos/5)+movDist;
+                    finCol = pos%5;
+                    break;
+
+                case 3 :
+                    finRow = ((pos/5)+2);
+                    finCol = ((pos%5)-2);
+                    break;
+
+                case 4:
+                    finRow = (pos/5);
+                    finCol = (pos%5) - movDist;
+                    break;
+
                 
-            }
-            else {
-                if(code == -2){
-                    finPos = pos - 1;
-                }
-                else {
-                    finPos = pos + 1;
-                }
+                case 5:
+                    finRow = ((pos/5)-2);
+                    finCol = ((pos%5)-2);
+                    break;
+                    
+                case 6:
+                    finRow = (pos/5)-movDist;
+                    finCol = pos%5;
+                break;
+                
+                case 7:
+                finRow = ((pos/5)-2);
+                finCol = ((pos%5)+2);
+                break;
+
+                case 8:
+                    finRow = (pos/5);
+                    finCol = (pos%5)+movDist;
+                    break;
+
             }
 
-            if(finPos/5 > 4 || finPos/5 < 0 || finPos%5 > 4 || finPos % 5 < 0){
+            if(finRow > 4 || finRow < 0 || finCol > 4 || finCol < 0){
 
                 System.out.println("Move out of bounds");
 
@@ -199,13 +304,13 @@ class Chess {
 
 
             String currChar = board[pos/5][pos%5];
-            String finChar = board[finPos/5][finPos%5];
+            String finChar = board[finRow][finCol];
             
 
-            if(Character.compare(currChar.charAt(0), finChar.charAt(0)) != 0){
+            if(currChar.charAt(0) != finChar.charAt(0)){
 
                 if(finChar.charAt(0) == 'A'){
-                    B.remove(finChar.substring(finChar.indexOf("-")+1, finChar.indexOf(":")));
+                    A.remove(finChar.substring(finChar.indexOf("-")+1, finChar.indexOf(":")));
                 }
 
                 board[pos/5][pos%5] = "-";
@@ -217,7 +322,7 @@ class Chess {
                 System.out.println("Incorrect move: Position occupied");
                 return;
             }
-            
+        }
         }
     }
     
@@ -231,8 +336,9 @@ class Chess {
         String[] chars = inp.split(",");
 
         if(player == 'A'){
-            for(int i=0; i<chars.length; i++)
-                A.put(chars[i].trim(), i+20);                
+            for(int i=0; i<chars.length; i++){
+                A.put(chars[i].trim(), i+20);
+            }
                 //updateBoard('A', chars[i].trim(), i+20);
         }
         else if(player == 'B'){
